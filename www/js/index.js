@@ -55,13 +55,27 @@ var app = {
         };
 
         var that = this;
-        this.retrievePhoneNumbers().then(function(data) {
-            that.updateContact(data);
+        this.retrievePhoneNumbersVersion().then(function(data) {
+            if (that.isSameVersion(data)) {
+                alert("You are up to date!");
+            } else {
+                window.localStorage.setItem('version', data.version);
+                console.log('version stored: ' + data.version);
+                alert('you are out of date');
+                that.retrievePhoneNumbers().then(function(data) {
+                    that.updateContact(data);
+                });
+            }
         });
-
         console.log('Received Event: ' + id);
     },
+    isSameVersion: function(data) {
+        var storage = window.localStorage;
+        var value = storage.getItem('version');
+        console.log('version retrieved: ' + value);
+        return parseInt(value) === parseInt(data.version);
 
+    },
     httpCall: function(url) {
         return new Promise(function(resolve, reject) {
             // do a thing, possibly async, then…
@@ -71,6 +85,10 @@ var app = {
                 reject('Unable to retrieve data for ' + url);
             });
         });
+    },
+
+    retrievePhoneNumbersVersion: function() {
+        return this.httpCall('https://api.myjson.com/bins/1dds9r')
     },
 
     retrievePhoneNumbers: function() {
@@ -103,7 +121,6 @@ var app = {
         var scammerContact = this.getContactTemplate();
         var options      = new ContactFindOptions();
         scammerContact.phoneNumbers = this.convertPhoneNumbersToContact(data.phone_numbers);
-        alert(JSON.stringify(scammerContact));
         options.filter   = scammerContact.displayName;
         options.multiple = false;
         options.desiredFields = [navigator.contacts.fieldType.id, navigator.contacts.fieldType.nickname, navigator.contacts.fieldType.displayName, navigator.contacts.fieldType.phoneNumbers, navigator.contacts.fieldType.familyName, navigator.contacts.fieldType.givenName];
