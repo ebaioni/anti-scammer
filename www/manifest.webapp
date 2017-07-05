@@ -1,0 +1,7 @@
+"type": "privileged",
+"permissions": {
+	"contacts": {
+		"access": "readwrite",
+		"description": "add scammers phone numbers"
+	}
+}
